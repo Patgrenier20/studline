@@ -53,3 +53,9 @@ Openings are wall apertures, not complete door/window construction assemblies. M
 ## 0.1.0 — existing baseline
 
 Single-floor shared-wall model, precise imperial units, SVG plan editor, GPU/software 3D, local persistence, undo/redo and 30 core tests. Baseline source: `ed6d5743959ca77c28cb8502c40156f8254f4c65`.
+
+## Account workspace
+
+- Added a public home page, ChatGPT sign-in, Studline profile creation, and a project dashboard.
+- Added account-owned cloud projects with revision checks and JSON import.
+- Expanded new-project setup with project details, floor elevation, and an optional starter room.

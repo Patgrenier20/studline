@@ -1,3 +1,4 @@
+import { api, cloudEnabled, openCloud, useCloud, type ProjectSummary } from "./storage/cloud";
 import {
   lazy,
   Suspense,
@@ -23,7 +24,6 @@ import {
   Check,
   ArrowUpRight,
   FileJson,
-  Building2,
   LayoutTemplate,
   CornerDownRight,
 } from "lucide-react";
@@ -74,7 +74,7 @@ function IconButton({
     </button>
   );
 }
-function ProjectDialog({
+export function ProjectDialog({
   kind,
   close,
 }: {
@@ -85,12 +85,20 @@ function ProjectDialog({
     [name, setName] = useState("Untitled residence"),
     [width, setWidth] = useState("20'"),
     [depth, setDepth] = useState("16'"),
+    [projectType,setProjectType] = useState("New construction"),
+    [location,setLocation] = useState(""),
+    [notes,setNotes] = useState(""),
+    [floorName,setFloorName] = useState("Ground floor"),
+    [elevation,setElevation] = useState(0),
+    [template,setTemplate] = useState("blank"),
+    [cloudProjects,setCloudProjects] = useState<ProjectSummary[]>([]),
     [error, setError] = useState(""),
     [projects, setProjects] = useState<Project[]>([]),
     [newDefaults, setNewDefaults] = useState(s.defaults),
     upload = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (kind === "open") {
+      if (cloudEnabled()) { void api<ProjectSummary[]>("projects").then(setCloudProjects,e=>setError(e.message)); return; }
       try {
         setProjects(listProjects());
       } catch {
@@ -119,11 +127,18 @@ function ProjectDialog({
               );
               return;
             }
-            if (!s.replace(createProject(name))) {
-              setError(useEditor.getState().notice);
-              return;
-            }
-            s.set({ defaults: newDefaults });
+            try {
+              let project=createProject(name);
+              project.floor.name=floorName.trim() || "Ground floor";
+              project.floor.elevation=elevation;
+              project.setup={projectType,location:location.trim(),notes:notes.trim(),wallHeight:newDefaults.height,wallThickness:newDefaults.thickness};
+              if(template==="rectangle") {
+                const w=parseImperial(width), d=parseImperial(depth);
+                if(w<feet(1)||d<feet(1)||w>feet(1000)||d>feet(1000)) throw new Error("Starter room dimensions must be 1–1,000 feet.");
+                project=rectangle(project,w,d,{x:0,y:0},newDefaults);
+              }
+              if (!s.replace(project)) throw new Error(useEditor.getState().notice);
+            } catch (error) {setError((error as Error).message);return;}
             close();
           }}
         >
@@ -140,13 +155,20 @@ function ProjectDialog({
               onChange={(e) => setName(e.target.value)}
             />
           </label>
-          <div className="new-project-spec">
-            <Building2 size={24} />
-            <div>
-              <strong>Residential · Ground floor</strong>
-              <span>Feet & inches · starting wall dimensions</span>
-            </div>
+          <div className="field-row">
+            <label className="field"><span>Project type</span><select value={projectType} onChange={e=>setProjectType(e.target.value)}><option>New construction</option><option>Renovation</option><option>Addition</option><option>Existing conditions</option><option>Concept study</option></select></label>
+            <label className="field"><span>Site or location (optional)</span><input maxLength={160} value={location} onChange={e=>setLocation(e.target.value)} /></label>
           </div>
+          <label className="field"><span>Scope or notes (optional)</span><textarea rows={2} maxLength={2000} value={notes} onChange={e=>setNotes(e.target.value)} /></label>
+          <div className="field-row">
+            <label className="field"><span>Floor name</span><input required maxLength={120} value={floorName} onChange={e=>setFloorName(e.target.value)} /></label>
+            <DimensionField label="Floor elevation" value={elevation} onChange={n=>{if(Math.abs(n)>feet(1000)) throw new Error("Use an elevation within ±1,000 feet.");setElevation(n);}} />
+          </div>
+          <label className="field"><span>Starting plan</span><select value={template} onChange={e=>setTemplate(e.target.value)}><option value="blank">Blank plan</option><option value="rectangle">Rectangular room</option></select></label>
+          {template==="rectangle"&&<div className="field-row">
+            <label className="field"><span>Room width</span><input required value={width} onChange={e=>setWidth(e.target.value)}/></label>
+            <label className="field"><span>Room depth</span><input required value={depth} onChange={e=>setDepth(e.target.value)}/></label>
+          </div>}
           <div className="field-row">
             <DimensionField
               label="New wall height"
@@ -229,12 +251,13 @@ function ProjectDialog({
       )}
       {kind === "open" && (
         <>
+          {cloudEnabled() && <div className="project-list">{cloudProjects.map(p=><button key={p.id} onClick={()=>void openCloud(p.id).then(project=>{s.replace(project,false);close();},e=>setError(e.message))}>{p.name}</button>)}</div>}
           <p className="modal-intro">
-            Projects saved in this browser. Import a Studline JSON file to
+            {cloudEnabled()?"Projects are stored in your account.":"Projects saved in this browser."} Import a Studline JSON file to
             continue work from another device.
           </p>
           <div className="project-list">
-            {projects.length ? (
+            {cloudEnabled() ? null : projects.length ? (
               projects.map((p) => (
                 <button
                   key={p.id}
@@ -350,7 +373,7 @@ function ProjectDialog({
               ["Esc", "Finish or cancel drawing"],
               ["Ctrl / ⌘ Z", "Undo"],
               ["Ctrl / ⌘ Shift Z", "Redo"],
-              ["Ctrl / ⌘ S", "Save to this browser"],
+              ["Ctrl / ⌘ S", cloudEnabled() ? "Save to your account" : "Save to this browser"],
               ["Delete", "Delete selected wall or opening"],
             ].map(([key, label]) => (
               <div key={key}>
@@ -386,15 +409,21 @@ function ProjectDialog({
     </Modal>
   );
 }
-export default function App() {
+export default function App({startNew=false}:{startNew?:boolean}) {
   const s = useEditor(),
-    [dialog, setDialog] = useState<Dialog>(null),
+    [dialog, setDialog] = useState<Dialog>(startNew?"new":null),
+    cloudStatus=useCloud(x=>x.status),
     ws = useWorkspace(),
     showProperties = ws.showInspector;
   const setShowProperties = (value: boolean) =>
     ws.set({ showInspector: value });
   useEffect(() => {
-    useEditor.getState().save();
+    if(!cloudEnabled()) return;
+    return useEditor.subscribe((state, previous) => {
+      if (state.project.id !== previous.project.id) {
+        history.replaceState(null, "", "/workspace?project=" + encodeURIComponent(state.project.id));
+      }
+    });
   }, []);
   useEffect(() => {
     if (!s.saveError) return;
@@ -464,8 +493,7 @@ export default function App() {
       <header className="app-header">
         <a
           className="brand"
-          href="#"
-          onClick={(e) => e.preventDefault()}
+          href={cloudEnabled()?"/dashboard":"/"}
           aria-label="Studline home"
         >
           <img src="/mark.svg" alt="" />
@@ -479,7 +507,7 @@ export default function App() {
         </div>
         <span className={`save-status ${s.saveError ? "warning" : ""}`}>
           <span className="tiny-dot" />
-          {s.saveError ? "Save needs attention" : "Saved in browser"}
+          {s.saveError ? "Save needs attention" : cloudEnabled() ? cloudStatus || "Account workspace" : "Saved in browser"}
         </span>
         <div className="header-actions">
           <button onClick={() => setDialog("new")}>

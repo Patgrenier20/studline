@@ -1,3 +1,4 @@
+import { cloudEnabled, saveCloud } from "../storage/cloud";
 import { useWorkspace } from "./workspace";
 import { checkLayerEdits } from "../core/layers";
 import { create } from "zustand";
@@ -62,7 +63,7 @@ interface EditorState {
   revision: number;
   set: (patch: Partial<EditorState>) => void;
   commit: (project: Project, label: string) => boolean;
-  replace: (project: Project) => boolean;
+  replace: (project: Project, persistOnOpen?: boolean) => boolean;
   undo: () => void;
   redo: () => void;
   remove: () => void;
@@ -70,7 +71,8 @@ interface EditorState {
 }
 function persist(project: Project): string | null {
   try {
-    saveProject(project);
+    if (cloudEnabled()) void saveCloud(project).catch(() => {});
+    else saveProject(project);
     return null;
   } catch {
     return "Browser storage is unavailable or full. Export JSON to keep your work.";
@@ -116,7 +118,7 @@ export const useEditor = create<EditorState>((set, get) => ({
       return false;
     }
   },
-  replace: (project) => {
+  replace: (project, persistOnOpen = true) => {
     const s = get();
     try {
       validateProject(project);
@@ -138,7 +140,8 @@ export const useEditor = create<EditorState>((set, get) => ({
       specification: null,
       tool: "select",
       view: "plan",
-      saveError: persist(project),
+      saveError: persistOnOpen ? persist(project) : null,
+      defaults: project.setup ? {...DEFAULT_WALL, height:project.setup.wallHeight,thickness:project.setup.wallThickness} : DEFAULT_WALL,
       fitToken: s.fitToken + 1,
       revision: s.revision + 1,
       notice: `Opened ${project.name}`,
@@ -195,7 +198,7 @@ export const useEditor = create<EditorState>((set, get) => ({
     const error = persist(s.project);
     set({
       saveError: error,
-      notice: error || "Project saved in this browser.",
+      notice: error || (cloudEnabled() ? "Saving to account…" : "Project saved in this browser."),
     });
   },
 }));

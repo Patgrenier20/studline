@@ -57,6 +57,13 @@ export interface Project {
   units: "imperial";
   modifiedAt: string;
   floor: Floor;
+  setup?: {
+    projectType: string;
+    location: string;
+    notes: string;
+    wallHeight: number;
+    wallThickness: number;
+  };
 }
 export const uid = () => {
   if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
@@ -115,6 +122,16 @@ export function validateProject(value: unknown): asserts value is Project {
     !Number.isFinite(Date.parse(p.modifiedAt))
   )
     throw new Error("Invalid project metadata.");
+  if (p.setup !== undefined) {
+    const setup = p.setup;
+    if (!setup || typeof setup.projectType !== "string" || setup.projectType.length > 60 ||
+      typeof setup.location !== "string" || setup.location.length > 160 ||
+      typeof setup.notes !== "string" || setup.notes.length > 2000 ||
+      !Number.isSafeInteger(setup.wallHeight) || setup.wallHeight < feet(1) || setup.wallHeight > feet(30) ||
+      !Number.isSafeInteger(setup.wallThickness) || setup.wallThickness < inches(0.25) || setup.wallThickness > inches(48)) {
+      throw new Error("Invalid project setup.");
+    }
+  }
   const f = p.floor;
   if (
     !f ||
