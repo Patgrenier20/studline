@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 2,
+  "id": "0721f29f-f255-479b-ad51-8a5eebbc5865",
+  "name": "Wall and room specifications QA",
+  "units": "imperial",
+  "modifiedAt": "2026-10-22T23:50:28.662Z",
+  "floor": {
+    "id": "e4d9e4b0-ac96-4a1a-bc47-a6f0b97f55b8",
+    "name": "Ground floor",
+    "elevation": 0,
+    "nodes": [
+      {
+        "id": "be574a63-4704-4b4e-ac6e-29250793a4f1",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "id": "75b86026-52ee-4878-927f-74574b19c7da",
+        "x": 18432,
+        "y": 0
+      },
+      {
+        "id": "24bdd662-f383-4030-a1bd-900900e696f9",
+        "x": 18432,
+        "y": 9600
+      },
+      {
+        "id": "ed12899b-7bea-44b5-9305-98003fc34c50",
+        "x": 9216,
+        "y": 9600
+      },
+      {
+        "id": "fb581912-d4d6-43a5-8c8d-fd28cdbd8e23",
+        "x": 9216,
+        "y": 6528
+      },
+      {
+        "id": "ef43a178-38b3-4d13-8d68-a13c2ab49e5a",
+        "x": 0,
+        "y": 6528
+      }
+    ],
+    "walls": [
+      {
+        "id": "70107442-1600-4b3e-8a86-fac77acf9110",
+        "start": "be574a63-4704-4b4e-ac6e-29250793a4f1",
+        "end": "75b86026-52ee-4878-927f-74574b19c7da",
+        "height": 6912,
+        "thickness": 512,
+        "material": "#ddd9cc",
+        "locked": false,
+        "exteriorSide": -1,
+        "wallType": "exterior",
+        "finishes": {
+          "interior": {
+            "kind": "paint",
+            "color": "#e8e1d3"
+          },
+          "exterior": {
+            "kind": "siding",
+            "color": "#668394"
+          }
+        }
+      },
+      {
+        "id": "bd9432b0-d580-4548-80ef-805a8256b911",
+        "start": "75b86026-52ee-4878-927f-74574b19c7da",
+        "end": "24bdd662-f383-4030-a1bd-900900e696f9",
+        "height": 6912,
+        "thickness": 384,
+        "material": "#ddd9cc"
+      },
+      {
+        "id": "14e93da8-8685-41e2-a101-533e1b2fadd7",
+        "start": "24bdd662-f383-4030-a1bd-900900e696f9",
+        "end": "ed12899b-7bea-44b5-9305-98003fc34c50",
+        "height": 6912,
+        "thickness": 384,
+        "material": "#ddd9cc"
+      },
+      {
+        "id": "1cf5d569-118c-46f4-b1ee-92fa3087da25",
+        "start": "ed12899b-7bea-44b5-9305-98003fc34c50",
+        "end": "fb581912-d4d6-43a5-8c8d-fd28cdbd8e23",
+        "height": 6912,
+        "thickness": 384,
+        "material": "#ddd9cc"
+      },
+      {
+        "id": "5d08020a-c8d2-4f50-9994-14a63efb96ab",
+        "start": "fb581912-d4d6-43a5-8c8d-fd28cdbd8e23",
+        "end": "ef43a178-38b3-4d13-8d68-a13c2ab49e5a",
+        "height": 6912,
+        "thickness": 384,
+        "material": "#ddd9cc"
+      },
+      {
+        "id": "2409568d-7f68-442e-ab79-6a7b80e6cc49",
+        "start": "ef43a178-38b3-4d13-8d68-a13c2ab49e5a",
+        "end": "be574a63-4704-4b4e-ac6e-29250793a4f1",
+        "height": 6912,
+        "thickness": 384,
+        "material": "#ddd9cc"
+      }
+    ],
+    "openings": [
+      {
+        "id": "ebcfe641-7599-4497-a892-3ccc998042f1",
+        "wallId": "70107442-1600-4b3e-8a86-fac77acf9110",
+        "offset": 6528,
+        "kind": "door",
+        "width": 2304,
+        "height": 5120,
+        "sill": 0,
+        "hinge": "start",
+        "swing": 1
+      }
+    ],
+    "rooms": [
+      {
+        "id": "42291403-f6ff-4e48-b8ec-09d809698723",
+        "boundaryWallIds": [
+          "70107442-1600-4b3e-8a86-fac77acf9110",
+          "bd9432b0-d580-4548-80ef-805a8256b911",
+          "14e93da8-8685-41e2-a101-533e1b2fadd7",
+          "1cf5d569-118c-46f4-b1ee-92fa3087da25",
+          "5d08020a-c8d2-4f50-9994-14a63efb96ab",
+          "2409568d-7f68-442e-ab79-6a7b80e6cc49"
+        ],
+        "name": "Living / dining",
+        "roomType": "Living room",
+        "showLabel": true,
+        "notes": "L-shaped family space."
+      }
+    ]
+  }
+}

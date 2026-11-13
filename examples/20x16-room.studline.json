@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "id": "20752651-8355-4a52-967f-3b3a3d50167e",
+  "name": "Milestone acceptance",
+  "units": "imperial",
+  "modifiedAt": "2026-10-22T01:08:02.186Z",
+  "floor": {
+    "id": "3eaa4bab-8b34-403c-9118-eaa833702e1f",
+    "name": "Ground floor",
+    "elevation": 0,
+    "nodes": [
+      {
+        "id": "5bb511b0-180b-466b-81ad-821e9ba97b59",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "id": "1fbedd6c-4218-49bf-8e1f-7dfef836e6c8",
+        "x": 15360,
+        "y": 0
+      },
+      {
+        "id": "61c6552d-61a0-44ee-b846-087d201e5327",
+        "x": 15360,
+        "y": 12288
+      },
+      {
+        "id": "f416fd6b-1c41-4fb0-8f9e-f8683fdbbceb",
+        "x": 0,
+        "y": 12288
+      }
+    ],
+    "walls": [
+      {
+        "id": "408ac940-51e2-424c-8f9e-4ecbbd167945",
+        "start": "5bb511b0-180b-466b-81ad-821e9ba97b59",
+        "end": "1fbedd6c-4218-49bf-8e1f-7dfef836e6c8",
+        "height": 7680,
+        "thickness": 384,
+        "material": "#ddd9cc"
+      },
+      {
+        "id": "c6c002a6-950f-48d6-a8ca-5bf70a596228",
+        "start": "1fbedd6c-4218-49bf-8e1f-7dfef836e6c8",
+        "end": "61c6552d-61a0-44ee-b846-087d201e5327",
+        "height": 6912,
+        "thickness": 384,
+        "material": "#ddd9cc"
+      },
+      {
+        "id": "dbda608b-643e-4707-841b-7855e5a7d704",
+        "start": "61c6552d-61a0-44ee-b846-087d201e5327",
+        "end": "f416fd6b-1c41-4fb0-8f9e-f8683fdbbceb",
+        "height": 6912,
+        "thickness": 384,
+        "material": "#ddd9cc"
+      },
+      {
+        "id": "6555cce9-98d2-477a-81da-a2a089b30c69",
+        "start": "f416fd6b-1c41-4fb0-8f9e-f8683fdbbceb",
+        "end": "5bb511b0-180b-466b-81ad-821e9ba97b59",
+        "height": 6912,
+        "thickness": 384,
+        "material": "#ddd9cc"
+      }
+    ]
+  }
+}

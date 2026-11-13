@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 2,
+  "id": "b8aa60a7-0601-4735-9e03-639558b1c74b",
+  "name": "Precision milestone acceptance",
+  "units": "imperial",
+  "modifiedAt": "2026-10-22T22:57:32.969Z",
+  "floor": {
+    "id": "a960412c-fbb7-4490-9f44-6e0e40fad38c",
+    "name": "Ground floor",
+    "elevation": 0,
+    "nodes": [
+      {
+        "id": "e5820aeb-8147-4987-944c-a7c836e7d5e4",
+        "x": 768,
+        "y": 1280
+      },
+      {
+        "id": "e67bf9cc-1c28-4836-910e-14b78c99d918",
+        "x": 11520,
+        "y": 1280
+      },
+      {
+        "id": "b50ce520-1170-4694-82eb-feef46774040",
+        "x": 11520,
+        "y": 10752
+      },
+      {
+        "id": "0534de5a-dda8-42cc-926b-b006d25236de",
+        "x": 7296,
+        "y": 10752
+      },
+      {
+        "id": "1b2b8f2d-5a6e-4edd-bb9d-bb6bfdd13952",
+        "x": 7296,
+        "y": 6912
+      },
+      {
+        "id": "cd5e9c9c-a10b-4c9f-a876-683881a44b65",
+        "x": 3840,
+        "y": 6912
+      },
+      {
+        "id": "a737e64e-e727-41d3-b2c1-29ee1e13f0d6",
+        "x": 3840,
+        "y": 10752
+      },
+      {
+        "id": "f1cf0697-aadd-46dd-8af6-2e626c9f3c84",
+        "x": 768,
+        "y": 10752
+      }
+    ],
+    "walls": [
+      {
+        "id": "56e4251e-8895-4ff5-83ca-5cf5fa75a7ba",
+        "start": "e5820aeb-8147-4987-944c-a7c836e7d5e4",
+        "end": "e67bf9cc-1c28-4836-910e-14b78c99d918",
+        "height": 6912,
+        "thickness": 640,
+        "material": "#ddd9cc"
+      },
+      {
+        "id": "9c6539e4-4daf-4937-b4ad-0e53b49c9d3d",
+        "start": "e67bf9cc-1c28-4836-910e-14b78c99d918",
+        "end": "b50ce520-1170-4694-82eb-feef46774040",
+        "height": 6912,
+        "thickness": 384,
+        "material": "#ddd9cc"
+      },
+      {
+        "id": "f63d8742-1566-47e7-a767-52612e9a1fad",
+        "start": "b50ce520-1170-4694-82eb-feef46774040",
+        "end": "0534de5a-dda8-42cc-926b-b006d25236de",
+        "height": 6912,
+        "thickness": 384,
+        "material": "#ddd9cc"
+      },
+      {
+        "id": "a205bb20-9947-4f5b-b89d-dc6ab8f01a0e",
+        "start": "0534de5a-dda8-42cc-926b-b006d25236de",
+        "end": "1b2b8f2d-5a6e-4edd-bb9d-bb6bfdd13952",
+        "height": 6912,
+        "thickness": 384,
+        "material": "#ddd9cc"
+      },
+      {
+        "id": "e52c3027-606e-4393-b7ac-0c04e34083e6",
+        "start": "1b2b8f2d-5a6e-4edd-bb9d-bb6bfdd13952",
+        "end": "cd5e9c9c-a10b-4c9f-a876-683881a44b65",
+        "height": 6912,
+        "thickness": 384,
+        "material": "#ddd9cc"
+      },
+      {
+        "id": "73ba6b81-c377-4d20-a8c1-8adfa8f6c67a",
+        "start": "cd5e9c9c-a10b-4c9f-a876-683881a44b65",
+        "end": "a737e64e-e727-41d3-b2c1-29ee1e13f0d6",
+        "height": 6912,
+        "thickness": 384,
+        "material": "#ddd9cc"
+      },
+      {
+        "id": "ba6a3c88-462d-48bd-b025-50e74712b55e",
+        "start": "a737e64e-e727-41d3-b2c1-29ee1e13f0d6",
+        "end": "f1cf0697-aadd-46dd-8af6-2e626c9f3c84",
+        "height": 6912,
+        "thickness": 384,
+        "material": "#ddd9cc"
+      },
+      {
+        "id": "ed4d625d-0d19-4974-b981-0df8df010701",
+        "start": "f1cf0697-aadd-46dd-8af6-2e626c9f3c84",
+        "end": "e5820aeb-8147-4987-944c-a7c836e7d5e4",
+        "height": 6912,
+        "thickness": 384,
+        "material": "#ddd9cc"
+      }
+    ],
+    "openings": []
+  }
+}

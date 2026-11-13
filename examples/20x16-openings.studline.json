@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 2,
+  "id": "63be3ff5-307c-4c1f-8b66-12a9fe38fac8",
+  "name": "Hosted openings acceptance",
+  "units": "imperial",
+  "modifiedAt": "2026-10-22T12:25:59.539Z",
+  "floor": {
+    "id": "504fd9cd-3b2c-4abe-949d-9abfc802f7b4",
+    "name": "Ground floor",
+    "elevation": 0,
+    "nodes": [
+      {
+        "id": "0e92f7b7-c5db-4c8f-b92a-e8bd69c5f8c4",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "id": "6425502c-5e6a-46d2-a453-22e0b8cca189",
+        "x": 15360,
+        "y": 0
+      },
+      {
+        "id": "f3e1b834-c4cb-4285-8ca3-ba5f8e26e376",
+        "x": 15360,
+        "y": 12288
+      },
+      {
+        "id": "91b85f80-ad90-40d8-a6fb-b4d31216e365",
+        "x": 0,
+        "y": 12288
+      }
+    ],
+    "walls": [
+      {
+        "id": "4e1f77dc-4df7-4e79-b1a0-dc397631dce3",
+        "start": "0e92f7b7-c5db-4c8f-b92a-e8bd69c5f8c4",
+        "end": "6425502c-5e6a-46d2-a453-22e0b8cca189",
+        "height": 6912,
+        "thickness": 384,
+        "material": "#ddd9cc"
+      },
+      {
+        "id": "4df29f54-d744-44fc-8342-af831416bb27",
+        "start": "6425502c-5e6a-46d2-a453-22e0b8cca189",
+        "end": "f3e1b834-c4cb-4285-8ca3-ba5f8e26e376",
+        "height": 6912,
+        "thickness": 384,
+        "material": "#ddd9cc"
+      },
+      {
+        "id": "d0305366-d85c-4b86-83cc-8d8b0612d445",
+        "start": "f3e1b834-c4cb-4285-8ca3-ba5f8e26e376",
+        "end": "91b85f80-ad90-40d8-a6fb-b4d31216e365",
+        "height": 6912,
+        "thickness": 384,
+        "material": "#ddd9cc"
+      },
+      {
+        "id": "39c771f9-e662-461d-bbc2-07adafd05399",
+        "start": "91b85f80-ad90-40d8-a6fb-b4d31216e365",
+        "end": "0e92f7b7-c5db-4c8f-b92a-e8bd69c5f8c4",
+        "height": 6912,
+        "thickness": 384,
+        "material": "#ddd9cc"
+      }
+    ],
+    "openings": [
+      {
+        "id": "52720f49-b616-4257-a6ba-773d9bb34167",
+        "wallId": "4e1f77dc-4df7-4e79-b1a0-dc397631dce3",
+        "offset": 1536,
+        "kind": "door",
+        "width": 2436,
+        "height": 5120,
+        "sill": 0,
+        "hinge": "end",
+        "swing": -1
+      },
+      {
+        "id": "f9cb2267-429c-4db6-b610-5b9924a898b1",
+        "wallId": "4e1f77dc-4df7-4e79-b1a0-dc397631dce3",
+        "offset": 9216,
+        "kind": "window",
+        "width": 2304,
+        "height": 3072,
+        "sill": 1920,
+        "hinge": "start",
+        "swing": 1
+      }
+    ]
+  }
+}
