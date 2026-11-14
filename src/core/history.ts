@@ -1,3 +1,5 @@
+import { normalizeTopology } from "./topology";
+import { reconcileRoomSettings } from "./rooms";
 import { type Project, validateProject } from "./model";
 export interface Command {
   label: string;
@@ -14,7 +16,15 @@ export function execute(
   before: Project,
   after: Project,
   label: string,
+  checkEdit?: (before: Project, after: Project) => void,
 ): { history: History; project: Project } {
+  validateProject(after);
+  if (JSON.stringify(before.floor.nodes) !== JSON.stringify(after.floor.nodes) ||
+      JSON.stringify(before.floor.walls) !== JSON.stringify(after.floor.walls)) {
+    const normalized = normalizeTopology(after);
+    after = reconcileRoomSettings(before, normalized.project, normalized.sourceWall);
+  }
+  checkEdit?.(before, after);
   validateProject(after);
   const project = { ...after, modifiedAt: new Date().toISOString() };
   return {

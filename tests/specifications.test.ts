@@ -6,7 +6,7 @@ import { detectRooms, pointInRoom, updateRoom } from "../src/core/rooms";
 import { applyWallSpecification, type WallSpecification } from "../src/core/specifications";
 import { feet, inches } from "../src/core/units";
 import { createWallGeometry } from "../src/core/mesh";
-import { reverseWall } from "../src/core/wallEditing";
+import { addReferencedWall, moveWall, reverseWall } from "../src/core/wallEditing";
 import { addOpening } from "../src/core/openings";
 import { deserialize, serialize, loadProject } from "../src/storage/projects";
 import { useEditor } from "../src/state/store";
@@ -53,9 +53,9 @@ describe("room specification and polygon selection",()=>{
     expect(detectRooms(broken)).toEqual([]);expect(broken.floor.rooms).toEqual(named.floor.rooms);
     expect(()=>validateProject(broken)).not.toThrow();expect(()=>updateRoom(broken,r.key,settings)).toThrow(/no longer enclosed/);
   });
-  it("rejects unsupported partition topology and crossing outlines instead of inventing room areas",()=>{
+  it("extracts two faces from a diagonal partition and rejects a self-crossing outline",()=>{
     const p=rectangleRoom(),[a]=wallPoints(p,p.floor.walls[0]),[,b]=wallPoints(p,p.floor.walls[1]);
-    expect(detectRooms(addWall(p,a,b,DEFAULT_WALL))).toEqual([]);
+    expect(detectRooms(addWall(p,a,b,DEFAULT_WALL))).toHaveLength(2);
     expect(detectRooms(polygon([[0,0],[10,10],[10,0],[0,10]]))).toEqual([]);
   });
   it("round trips metadata and old schema-2 geometry without a destructive migration",()=>{
@@ -119,6 +119,54 @@ describe("wall specification transaction and render surfaces",()=>{
 describe("editor persistence and undo for specifications",()=>{
   beforeEach(()=>{const data=new Map<string,string>();vi.stubGlobal("localStorage",{get length(){return data.size;},key:(i:number)=>[...data.keys()][i],getItem:(key:string)=>data.get(key)??null,setItem:(key:string,value:string)=>data.set(key,value)});useEditor.getState().replace(rectangleRoom());});
   afterEach(()=>vi.unstubAllGlobals());
+  it("draws adjoining rooms, retains a hosted door, and undoes and reopens the edit", () => {
+    const editor = useEditor.getState;
+    let p = editor().project;
+    const host = p.floor.walls[0];
+    p = addOpening(p, host.id, "door", feet(13));
+    const original = detectRooms(p)[0];
+    p = updateRoom(p, original.key, settings);
+    const roomId = p.floor.rooms![0].id;
+    editor().replace(p);
+
+    const addPartition = (x: number) => addReferencedWall(p, { x: feet(x), y: 0 },
+      { x: feet(x), y: feet(16) }, "centerline", DEFAULT_WALL);
+    expect(editor().commit(addPartition(14), "Draw wall")).toBe(false);
+    expect(editor().notice).toMatch(/cut through a door/);
+    expect(editor().project).toEqual(p);
+    expect(editor().commit(addPartition(10), "Draw wall")).toBe(true);
+    const divided = editor().project;
+    expect(divided.floor.walls).toHaveLength(7);
+    const rooms = detectRooms(divided);
+    expect(rooms).toHaveLength(2);
+    expect(rooms.map(r => r.area)).toEqual([9.5 * 15.5, 9.5 * 15.5]);
+    expect(rooms.filter(r => r.settings?.id === roomId)).toHaveLength(1);
+    const [door] = divided.floor.openings;
+    expect(door.id).toBe(p.floor.openings[0].id);
+    expect(door.wallId).not.toBe(host.id);
+    expect(door.offset + divided.floor.nodes.find(n =>
+      n.id === divided.floor.walls.find(w => w.id === door.wallId)!.start)!.x).toBe(feet(13));
+
+    const partitionId = divided.floor.walls.at(-1)!.id;
+    const other = rooms.find(room => !room.settings)!;
+    expect(editor().commit(updateRoom(divided, other.key, { ...settings, name: "Office" }), "Name room")).toBe(true);
+    const named = editor().project;
+    expect(editor().commit(moveWall(named, partitionId, { x: feet(2), y: 0 }, true, true), "Move wall")).toBe(true);
+    const moved = editor().project;
+    const movedRooms = detectRooms(moved);
+    expect(movedRooms.map(r => r.settings?.id)).toEqual(detectRooms(named).map(r => r.settings?.id));
+    const movedDoor = moved.floor.openings[0];
+    expect(movedDoor.offset + wallPoints(moved, moved.floor.walls.find(w => w.id === movedDoor.wallId)!)[0].x).toBe(feet(13));
+    expect(editor().commit(deleteWall(moved, partitionId), "Delete wall")).toBe(true);
+    expect(detectRooms(editor().project).filter(r => r.settings)).toHaveLength(1);
+    editor().undo();
+    expect(editor().project).toEqual(moved);
+    editor().undo();
+    expect(editor().project).toEqual(named);
+    editor().redo();
+    expect(detectRooms(deserialize(serialize(loadProject(p.id).project))).map(r => r.settings?.name).sort())
+      .toEqual(["Kitchen", "Office"]);
+  });
   it("autosaves, undoes, redoes and reopens room settings and wall finishes together",()=>{
     const p=useEditor.getState().project;
     useEditor.getState().commit(updateRoom(p,detectRooms(p)[0].key,settings),"Name room");
@@ -148,4 +196,18 @@ it("infers finish sides per enclosure even with opposite winding and unrelated w
   const next=applyWallSpecification(p,p.floor.walls[0].id,specification(p));
   expect(next.floor.walls[0].exteriorSide).toBe(1);
   expect(detectRooms(next)).toHaveLength(2);
+});
+
+it("normalizes compatible overlaps on an L-shaped shell and X-crossing partitions", () => {
+  const first = polygon([[0,0],[20,0],[20,10],[10,10],[10,20],[0,20]]);
+  useEditor.getState().replace(first, false);
+  const overlap = addWall(first, {x:0,y:0}, {x:feet(15),y:0}, DEFAULT_WALL);
+  expect(useEditor.getState().commit(overlap, "Overlap")).toBe(true);
+  const normalized = useEditor.getState().project;
+  expect(normalized.floor.walls).toHaveLength(7);
+  const addPartition = (p: Project, a: [number, number], b: [number, number]) =>
+    addWall(p, {x:feet(a[0]),y:feet(a[1])}, {x:feet(b[0]),y:feet(b[1])}, DEFAULT_WALL);
+  const divided = addPartition(normalized, [0,5], [20,5]);
+  expect(detectRooms(divided)).toHaveLength(2);
+  expect(detectRooms(addPartition(divided, [5,0], [5,20]))).toHaveLength(4);
 });

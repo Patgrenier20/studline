@@ -245,7 +245,7 @@ export function addWall(
   validateProject(next);
   return next;
 }
-export function editNodes(p: Project, changes: Record<string, Point>): Project {
+export function editNodes(p: Project, changes: Record<string, Point>, adjustOpenings?: (next: Project) => void): Project {
   for(const w of p.floor.walls.filter(w=>w.locked)) for(const n of wallPoints(p,w)) {
     const pt=changes[n.id];
     if(pt&&(Math.round(pt.x)!==n.x||Math.round(pt.y)!==n.y)) throw new Error("Unlock the affected wall before moving its junctions.");
@@ -275,6 +275,7 @@ export function editNodes(p: Project, changes: Record<string, Point>): Project {
     start: remap.get(w.start) || w.start,
     end: remap.get(w.end) || w.end,
   }));
+  adjustOpenings?.(next);
   validateProject(next);
   return next;
 }
