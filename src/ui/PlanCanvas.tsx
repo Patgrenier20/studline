@@ -14,7 +14,7 @@ import {
   length,
   wallPoints,
 } from "../core/model";
-import { bounds, enclosedArea } from "../core/geometry";
+import { bounds } from "../core/geometry";
 import {
   addOpening,
   openingDefaults,
@@ -38,6 +38,7 @@ import { FT, formatImperial, parseImperial } from "../core/units";
 import {
   draftPoint,
   openEndpoints,
+  snapWallJoin,
   pointAtHeading,
   wheelZoomFactor,
   zoomAt,
@@ -257,7 +258,7 @@ export function PlanCanvas() {
               : ("alignment" as const),
         };
     }
-    return draftPoint(
+    const draft = draftPoint(
       pt,
       guideProject,
       s.grid,
@@ -267,6 +268,11 @@ export function PlanCanvas() {
       s.ortho || shift,
       exclude,
     );
+    if (s.tool === "wall" && s.snap && draft.kind !== "endpoint") {
+      const join = snapWallJoin(pt, guideProject, 12 / cam.scale, base, s.ortho || shift);
+      if (join) return { point: join, kind: "endpoint" as const };
+    }
+    return draft;
   }
   function placeWall(end: Point) {
     if (!start) return;
@@ -278,18 +284,14 @@ export function PlanCanvas() {
       s.defaults,
     );
     if(!s.commit(next, "Draw wall")) throw new Error(useEditor.getState().notice);
-    const connects = s.project.floor.walls.some((w) =>
-      referenceSegment(s.project, w, draftReference).some(
-        (n) => length(n, end) <= 1,
-      ),
-    );
+    const committed = useEditor.getState().project;
+    const drawn = next.floor.walls.at(-1)!;
+    const endpoint = committed.floor.nodes.find(n => length(n, end) <= 1);
+    const connects = endpoint !== undefined &&
+      committed.floor.walls.filter(w => w.start === endpoint.id || w.end === endpoint.id).length > 1;
     s.set({
-      selected: next.floor.walls.at(-1)!.id,
-      notice: connects
-        ? enclosedArea(next) !== null
-          ? "Closed outline · shared junctions verified."
-          : "Connected to existing junction."
-        : "Draw wall",
+      selected: committed.floor.walls.some(w => w.id === drawn.id) ? drawn.id : null,
+      notice: connects ? "Connected to existing wall." : "Draw wall",
     });
     setStart(connects ? null : end);
     setHover(end);
@@ -925,7 +927,7 @@ export function PlanCanvas() {
               ws.layers.rooms.visible && room.settings?.showLabel !== false,
           )
           .map((room) => (
-            <g className="room-label" key={room.key} pointerEvents="none">
+            <g className="room-label" key={room.id} pointerEvents="none">
               <text
                 x={room.labelPoint.x}
                 y={room.labelPoint.y - 8 / cam.scale}

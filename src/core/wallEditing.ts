@@ -1,5 +1,6 @@
 import { addWall, clone, editNodes, length, validateProject, wallPoints, type Point, type Project, type Wall } from "./model";
 import { closedLoop, signedArea, wallFootprint } from "./geometry";
+import { wallStation } from "./openings";
 import { inches } from "./units";
 
 export type WallReference = "exterior" | "centerline" | "interior";
@@ -71,8 +72,8 @@ export function hitWallReference(p: Project,point: Point,tolerance: number,prefe
 }
 
 /** Propagate axis equality only along existing orthogonal connections. */
-export function constrainedNodes(p: Project,changes: Record<string,Point>,enabled: boolean) {
-  if(!enabled) return editNodes(p,changes);
+export function constrainedNodes(p: Project,changes: Record<string,Point>,enabled: boolean,adjustOpenings?: (next: Project) => void) {
+  if(!enabled) return editNodes(p,changes,adjustOpenings);
   const output:Record<string,Point>={};
   for(const axis of ["x","y"] as const) {
     const remaining=new Set(p.floor.nodes.map(n=>n.id));
@@ -97,12 +98,26 @@ export function constrainedNodes(p: Project,changes: Record<string,Point>,enable
       }
     }
   }
-  return editNodes(p,output);
+  return editNodes(p,output,adjustOpenings);
 }
 export function moveWall(p: Project,id:string,delta:Point,parallel:boolean,constrained:boolean) {
   const w=p.floor.walls.find(w=>w.id===id)!, {a,b,n}=wallDirection(p,w);
   if(parallel) {const amount=delta.x*n.x+delta.y*n.y;delta={x:n.x*amount,y:n.y*amount};}
-  return constrainedNodes(p,{[a.id]:{x:a.x+delta.x,y:a.y+delta.y},[b.id]:{x:b.x+delta.x,y:b.y+delta.y}},constrained);
+  const junctions = new Set([w.start, w.end].filter(node =>
+    p.floor.walls.filter(other => other.start === node || other.end === node).length >= 3));
+  return constrainedNodes(p,{[a.id]:{x:a.x+delta.x,y:a.y+delta.y},[b.id]:{x:b.x+delta.x,y:b.y+delta.y}},constrained, next => {
+    for (const opening of next.floor.openings) {
+      const oldHost = p.floor.walls.find(host => host.id === opening.wallId)!;
+      if (oldHost.id === id || (!junctions.has(oldHost.start) && !junctions.has(oldHost.end))) continue;
+      const host = next.floor.walls.find(host => host.id === opening.wallId)!;
+      const previous = wallDirection(p, oldHost), current = wallDirection(next, host);
+      const onHostLine = (point: Point) => Math.abs((point.x - previous.a.x) * previous.n.x +
+        (point.y - previous.a.y) * previous.n.y) <= 1;
+      if (!onHostLine(current.a) || !onHostLine(current.b)) continue;
+      const jamb = { x: previous.a.x + opening.offset * previous.d.x, y: previous.a.y + opening.offset * previous.d.y };
+      opening.offset = Math.round(wallStation(next, host, jamb));
+    }
+  });
 }
 export function resizeReference(p: Project,id:string,size:number,ref:WallReference,anchor:EditAnchor,constrained:boolean) {
   if(!Number.isSafeInteger(size)||size<inches(1)) throw new Error("Wall length must be at least one inch.");

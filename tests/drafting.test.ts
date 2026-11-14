@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { addWall, createProject, DEFAULT_WALL, editNodes, length, wallPoints } from "../src/core/model";
 import { enclosedArea } from "../src/core/geometry";
-import { draftPoint, openEndpoints, pointAtHeading, wheelZoomFactor, zoomAt } from "../src/core/drafting";
+import { draftPoint, openEndpoints, snapWallJoin, pointAtHeading, wheelZoomFactor, zoomAt } from "../src/core/drafting";
 import { feet, inches, FT } from "../src/core/units";
 
 describe("recording regression: precise L-shaped drafting", () => {
@@ -93,4 +93,12 @@ describe("cursor-centered navigation", () => {
       expect(next.scale).toBeGreaterThanOrEqual(.003);expect(next.scale).toBeLessThanOrEqual(.5);
     }
   });
+});
+
+it("snaps a partition to wall centerlines without breaking orthogonal drawing", () => {
+  const p = addWall(createProject(), { x: 0, y: 0 }, { x: feet(20), y: 0 }, DEFAULT_WALL);
+  const base = { x: feet(9.25), y: feet(12) };
+  const cursor = { x: feet(9.4), y: inches(2) };
+  expect(snapWallJoin(cursor, p, inches(4), null, true)).toEqual({ x: cursor.x, y: 0 });
+  expect(snapWallJoin(cursor, p, inches(4), base, true)).toEqual({ x: base.x, y: 0 });
 });

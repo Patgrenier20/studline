@@ -1,6 +1,29 @@
-import { length, type Point, type Project } from "./model";
+import { length, wallPoints, type Point, type Project } from "./model";
 import { snapPoint } from "./geometry";
+import { projectToSegment } from "./wallEditing";
 import { inches } from "./units";
+
+/** Wall drawing can acquire a centerline between its existing endpoints. */
+export function snapWallJoin(point: Point, project: Project, tolerance: number, base: Point | null, ortho: boolean): Point | undefined {
+  const horizontal = base && Math.abs(point.x - base.x) >= Math.abs(point.y - base.y);
+  let closest: Point | undefined, distance = tolerance;
+  for (const wall of project.floor.walls) {
+    const [a, b] = wallPoints(project, wall);
+    let t = projectToSegment(point, a, b).t;
+    if (base && ortho) {
+      const fixed = horizontal ? "y" : "x";
+      if (a[fixed] === b[fixed]) continue;
+      t = (base[fixed] - a[fixed]) / (b[fixed] - a[fixed]);
+      if (t < 0 || t > 1) continue;
+    }
+    const target = { x: Math.round(a.x + (b.x - a.x) * t), y: Math.round(a.y + (b.y - a.y) * t) };
+    const gap = length(point, target);
+    if (gap > distance || (base && length(base, target) < inches(1))) continue;
+    closest = target;
+    distance = gap;
+  }
+  return closest;
+}
 
 export interface DraftSnap {
   point: Point;

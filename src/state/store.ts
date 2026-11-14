@@ -104,8 +104,8 @@ export const useEditor = create<EditorState>((set, get) => ({
   commit: (next, label) => {
     try {
       const s = get();
-      checkLayerEdits(s.project, next, useWorkspace.getState().layers);
-      const result = execute(s.history, s.project, next, label);
+      const result = execute(s.history, s.project, next, label,
+        (before, after) => checkLayerEdits(before, after, useWorkspace.getState().layers));
       set({
         ...result,
         saveError: persist(result.project),

@@ -69,7 +69,7 @@ See the [workspace audit and verification](docs/WORKSPACE_AUDIT.md) for the befo
 - Atomic contextual numeric edits, orthogonal connected-node constraints, fixed walls and interior/exterior surface finishes.
 - Reversible commands with 100-step undo/redo; autosave and last-valid-save recovery.
 - Shared footprint extrusion in Three.js; WebGL/R3F renderer and software SVG renderer with orbit/pan/zoom.
-- Actual polygon areas for independent simple enclosures, room name/type/notes, interior label points, total wall length and validation errors.
+- Actual interior polygon areas for standalone and adjoining rooms, room name/type/notes, interior label points, total wall length and validation errors.
 - Schema-1 migration with preserved geometry and object IDs; schema-2 opening, room and finish persistence.
 
 ## Validation
@@ -78,13 +78,13 @@ See the [workspace audit and verification](docs/WORKSPACE_AUDIT.md) for the befo
 npm run check
 ```
 
-This runs ESLint, **131 Vitest tests**, strict TypeScript compilation, and the Vite production build. See `docs/VERIFICATION.md` for browser checks and limits. Tests cover actual mesh volume/rays through openings, connected edits, miter corners, welding, exact units, ortho/alignment regression, zoom anchoring, command reversal, migrations and save recovery. The original 30 tests remain unchanged.
+This runs ESLint, Vitest tests, strict TypeScript compilation, and the Vite production build. See `docs/VERIFICATION.md` for browser checks and limits. Tests cover actual mesh volume/rays through openings, connected edits, miter corners, welding, exact units, ortho/alignment regression, zoom anchoring, command reversal, migrations and save recovery. The original 30 tests remain unchanged.
 
 ## Current boundaries
 
-- One floor, straight walls and independent simple closed-cycle room detection. No multiple-room partition extraction. Interior and centerline areas are explicitly distinguished.
+- One floor with straight walls. Rooms are extracted from enclosed wall faces, including adjoining rooms. Room polygons support a single boundary, so nested enclosures and holes remain unsupported.
 - Orthogonal constraints propagate existing horizontal/vertical equalities; they are not a general-angle constraint solver. Angle edits/free editing may intentionally tilt adjacent walls. Face solves reject unsupported configurations.
-- Only two-wall corner joins are resolved. Crossings and multi-way wall joins are not automatically split or unioned.
+- Wall edits split T- and X-junctions and consolidate compatible collinear overlaps. Multi-wall render footprints use butt joins; unioned wall meshes remain future work.
 - Wall classifications are not layered assemblies. Dimension labels are editable derived measurements, not persistent dimension objects.
 - The ground grid in 3D is a viewing aid, not a floor assembly. No orthographic/elevation view yet.
 - Browser storage is device/origin-specific and can be cleared. Export JSON backups for important work. There is no account-based project synchronization yet.
@@ -96,6 +96,6 @@ This runs ESLint, **131 Vitest tests**, strict TypeScript compilation, and the V
 
 ## Architecture and next milestone
 
-Read `docs/ARCHITECTURE.md` for schema, coordinates, module boundaries, state and persistence. [DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md) contains the verified inventory and defects; [SCREEN_RECORDING_REVIEW.md](SCREEN_RECORDING_REVIEW.md) records timestamped findings. The next milestone is robust intersections, multi-way joins and room detection. [ROADMAP.md](ROADMAP.md) defines acceptance gates and [CHANGELOG.md](CHANGELOG.md) records this increment. AI integration should follow these model rules, behind a server-side credential boundary, with validated command previews.
+Read `docs/ARCHITECTURE.md` for schema, coordinates, module boundaries, state and persistence. [DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md) contains the verified inventory and defects; [SCREEN_RECORDING_REVIEW.md](SCREEN_RECORDING_REVIEW.md) records timestamped findings. Multi-wall mesh unions and room surfaces remain future work. [ROADMAP.md](ROADMAP.md) defines acceptance gates and [CHANGELOG.md](CHANGELOG.md) records this increment. AI integration should follow these model rules, behind a server-side credential boundary, with validated command previews.
 
 The dedicated Sites source repository tracks this project. `.openai/hosting.json` holds its identity and private static-hosting configuration. Do not create a second Site when continuing development.
